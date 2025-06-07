@@ -1,3 +1,4 @@
+
 # AI Customer Support Chat Platform
 
 A full-stack AI-powered customer support chat application built with React, Node.js, MongoDB, and OpenAI API.
@@ -56,7 +57,7 @@ A full-stack AI-powered customer support chat application built with React, Node
    cd server
    cp .env.example .env
    ```
-   
+
    Edit `server/.env` with your configuration:
    ```env
    OPENAI_API_KEY=your_openai_api_key_here
@@ -74,7 +75,7 @@ A full-stack AI-powered customer support chat application built with React, Node
    ```bash
    # Start both frontend and backend
    npm run dev:full
-   
+
    # Or start individually:
    # Frontend: npm run dev
    # Backend: npm run server
@@ -211,3 +212,54 @@ If you encounter any issues or have questions, please:
 - Keep conversation history reasonable (automatically limited to last 10 messages for context)
 - Monitor OpenAI usage to avoid unexpected costs
 - Consider implementing rate limiting for production use
+
+## Admin Interface for FAQ Management
+
+🔑 Admin Login Credentials  
+A default admin user is automatically created when the server starts:  
+Email: admin@example.com  
+Password: admin123  
+
+🎯 Admin Features  
+1. Admin Panel Access  
+Admin users see a navigation toggle in the top-right corner to switch between Chat and Admin views  
+Non-admin users are blocked from accessing the admin panel  
+
+2. FAQ Management  
+- View all FAQs with search and category filtering  
+- Add new FAQs manually with form validation  
+- Upload FAQ documents (PDF or text files) with automatic parsing  
+- Edit existing FAQs (update functionality added)  
+- Delete FAQs with confirmation  
+- Category management and priority settings  
+
+3. File Upload Support  
+- Upload PDF or text files containing FAQs  
+- Automatic parsing of Q: and A: format  
+- Keyword extraction for better search matching  
+- Bulk FAQ creation from documents  
+
+4. Enhanced Admin Routes  
+- PUT /api/admin/faqs/:id - Update FAQ  
+- DELETE /api/admin/faqs/:id - Delete FAQ  
+- Enhanced search and filtering capabilities  
+
+🚀 How to Use  
+- Start the application (already running)  
+- Login as admin using the credentials above  
+- Click "Admin" in the top-right navigation to access the admin panel  
+- Add FAQs manually or upload documents  
+- Manage existing FAQs with edit/delete options  
+
+📄 FAQ Document Format  
+When uploading files, use this format:  
+
+```
+Q: How do I reset my password?  
+A: You can reset your password by clicking the "Forgot Password" link.  
+
+Q: What are your business hours?  
+A: We are open Monday-Friday, 9 AM to 6 PM EST.  
+```
+
+The admin panel provides a beautiful, production-ready interface for managing your AI assistant's knowledge base. All FAQs added here will be automatically used by the AI to provide better, more accurate responses to users!
