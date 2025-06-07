@@ -101,6 +101,8 @@ A full-stack AI-powered customer support chat application built with React, Node
 - `POST /api/admin/upload-faqs` - Upload FAQ documents
 - `GET /api/admin/faqs` - Get all FAQs
 - `POST /api/admin/faqs` - Add single FAQ
+- For login the credentials are -> Email -> admin@example.com Password -> admin123
+  
 
 ## Usage
 
