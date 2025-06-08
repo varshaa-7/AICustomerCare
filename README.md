@@ -1,7 +1,7 @@
 
 # AI Customer Support Chat Platform
 
-A full-stack AI-powered customer support chat application built with React, Node.js, MongoDB, and OpenAI API.
+A full-stack AI-powered customer support chat application built with React, Node.js, MongoDB, and **OpenRouter API (GPT-3.5-turbo)**.
 
 ## Features
 
@@ -96,6 +96,7 @@ A full-stack AI-powered customer support chat application built with React, Node
 - `POST /api/chat` - Send message and get AI response
 - `GET /api/chat/history/:userId` - Get user's chat history
 - `GET /api/chat/conversation/:sessionId` - Get specific conversation
+- For login as normal user, credentials are -> Email -> awa@gmail.com Password -> 123456
 
 ### Admin (FAQ Management)
 - `POST /api/admin/upload-faqs` - Upload FAQ documents
