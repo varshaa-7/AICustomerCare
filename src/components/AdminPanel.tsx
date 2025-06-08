@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Upload, Plus, Search, Edit, Trash2, FileText, Save, X } from 'lucide-react';
 import { authStore } from '../stores/AuthStore';
 import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
 
 interface FAQ {
   _id: string;
@@ -24,12 +25,21 @@ const AdminPanel = observer(() => {
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadLoading, setUploadLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
   
   const [newFaq, setNewFaq] = useState({
     question: '',
     answer: '',
     category: 'General',
     priority: 1
+  });
+
+  const [editForm, setEditForm] = useState({
+    question: '',
+    answer: '',
+    category: '',
+    priority: 1,
+    isActive: true
   });
 
   const apiUrl = 'http://localhost:5000/api';
@@ -49,6 +59,20 @@ const AdminPanel = observer(() => {
       setFaqs(response.data.faqs);
     } catch (error) {
       console.error('Error loading FAQs:', error);
+      toast.error('Error loading FAQs. Please try again.', {
+        duration: 4000,
+        position: 'top-right',
+        style: {
+          background: '#fee2e2',
+          color: '#b91c1c',
+          borderRadius: '8px',
+          padding: '12px 20px',
+        },
+        iconTheme: {
+          primary: '#b91c1c',
+          secondary: '#fff',
+        },
+      });
     } finally {
       setLoading(false);
     }
@@ -61,8 +85,133 @@ const AdminPanel = observer(() => {
       setNewFaq({ question: '', answer: '', category: 'General', priority: 1 });
       setShowAddForm(false);
       loadFAQs();
+      toast.success('FAQ added successfully!', {
+        duration: 4000,
+        position: 'top-right',
+        style: {
+          background: '#dcfce7',
+          color: '#15803d',
+          borderRadius: '8px',
+          padding: '12px 20px',
+        },
+        iconTheme: {
+          primary: '#15803d',
+          secondary: '#fff',
+        },
+      });
     } catch (error) {
       console.error('Error adding FAQ:', error);
+      toast.error('Error adding FAQ. Please try again.', {
+        duration: 4000,
+        position: 'top-right',
+        style: {
+          background: '#fee2e2',
+          color: '#b91c1c',
+          borderRadius: '8px',
+          padding: '12px 20px',
+        },
+        iconTheme: {
+          primary: '#b91c1c',
+          secondary: '#fff',
+        },
+      });
+    }
+  };
+
+  const handleEditFaq = (faq: FAQ) => {
+    setEditingFaq(faq);
+    setEditForm({
+      question: faq.question,
+      answer: faq.answer,
+      category: faq.category,
+      priority: faq.priority,
+      isActive: faq.isActive
+    });
+  };
+
+  const handleUpdateFaq = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingFaq) return;
+
+    try {
+      await axios.put(`${apiUrl}/admin/faqs/${editingFaq._id}`, editForm);
+      setEditingFaq(null);
+      setEditForm({ question: '', answer: '', category: '', priority: 1, isActive: true });
+      loadFAQs();
+      toast.success('FAQ updated successfully!', {
+        duration: 4000,
+        position: 'top-right',
+        style: {
+          background: '#dcfce7',
+          color: '#15803d',
+          borderRadius: '8px',
+          padding: '12px 20px',
+        },
+        iconTheme: {
+          primary: '#15803d',
+          secondary: '#fff',
+        },
+      });
+    } catch (error) {
+      console.error('Error updating FAQ:', error);
+      toast.error('Error updating FAQ. Please try again.', {
+        duration: 4000,
+        position: 'top-right',
+        style: {
+          background: '#fee2e2',
+          color: '#b91c1c',
+          borderRadius: '8px',
+          padding: '12px 20px',
+        },
+        iconTheme: {
+          primary: '#b91c1c',
+          secondary: '#fff',
+        },
+      });
+    }
+  };
+
+  const handleDeleteFaq = async (faqId: string) => {
+    if (!confirm('Are you sure you want to delete this FAQ? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeleteLoading(faqId);
+    try {
+      await axios.delete(`${apiUrl}/admin/faqs/${faqId}`);
+      loadFAQs();
+      toast.success('FAQ deleted successfully!', {
+        duration: 4000,
+        position: 'top-right',
+        style: {
+          background: '#dcfce7',
+          color: '#15803d',
+          borderRadius: '8px',
+          padding: '12px 20px',
+        },
+        iconTheme: {
+          primary: '#15803d',
+          secondary: '#fff',
+        },
+      });
+    } catch (error) {
+      console.error('Error deleting FAQ:', error);
+      toast.error('Error deleting FAQ. Please try again.', {
+        duration: 4000,
+        position: 'top-right',
+        style: {
+          background: '#fee2e2',
+          color: '#b91c1c',
+          borderRadius: '8px',
+          padding: '12px 20px',
+        },
+        iconTheme: {
+          primary: '#b91c1c',
+          secondary: '#fff',
+        },
+      });
+    } finally {
+      setDeleteLoading(null);
     }
   };
 
@@ -80,12 +229,38 @@ const AdminPanel = observer(() => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      alert(`Successfully uploaded ${response.data.faqs} FAQs`);
+      toast.success(`Successfully uploaded ${response.data.faqs} FAQs`, {
+        duration: 4000,
+        position: 'top-right',
+        style: {
+          background: '#dcfce7',
+          color: '#15803d',
+          borderRadius: '8px',
+          padding: '12px 20px',
+        },
+        iconTheme: {
+          primary: '#15803d',
+          secondary: '#fff',
+        },
+      });
       setUploadFile(null);
       loadFAQs();
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert('Error uploading file');
+      toast.error('Error uploading file. Please try again.', {
+        duration: 4000,
+        position: 'top-right',
+        style: {
+          background: '#fee2e2',
+          color: '#b91c1c',
+          borderRadius: '8px',
+          padding: '12px 20px',
+        },
+        iconTheme: {
+          primary: '#b91c1c',
+          secondary: '#fff',
+        },
+      });
     } finally {
       setUploadLoading(false);
     }
@@ -117,6 +292,9 @@ const AdminPanel = observer(() => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Add Toaster component */}
+      <Toaster />
+      
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between">
@@ -298,6 +476,99 @@ const AdminPanel = observer(() => {
           </div>
         )}
 
+        {/* Edit FAQ Form */}
+        {editingFaq && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-800">Edit FAQ</h3>
+              <button
+                onClick={() => setEditingFaq(null)}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleUpdateFaq} className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                  <input
+                    type="text"
+                    value={editForm.category}
+                    onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., General, Technical, Billing"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Priority (1-10)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={editForm.priority}
+                    onChange={(e) => setEditForm({ ...editForm, priority: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <select
+                    value={editForm.isActive ? 'active' : 'inactive'}
+                    onChange={(e) => setEditForm({ ...editForm, isActive: e.target.value === 'active' })}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Question</label>
+                <input
+                  type="text"
+                  value={editForm.question}
+                  onChange={(e) => setEditForm({ ...editForm, question: e.target.value })}
+                  required
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter the question..."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Answer</label>
+                <textarea
+                  value={editForm.answer}
+                  onChange={(e) => setEditForm({ ...editForm, answer: e.target.value })}
+                  required
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter the answer..."
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingFaq(null)}
+                  className="px-4 py-2 text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex items-center space-x-2 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Update FAQ</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
         {/* FAQs List */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200">
@@ -365,20 +636,23 @@ const AdminPanel = observer(() => {
                     
                     <div className="flex items-center space-x-2 ml-4">
                       <button
-                        onClick={() => setEditingFaq(faq)}
+                        onClick={() => handleEditFaq(faq)}
                         className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                        title="Edit FAQ"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => {
-                          if (confirm('Are you sure you want to delete this FAQ?')) {
-                            // Add delete functionality here
-                          }
-                        }}
-                        className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                        onClick={() => handleDeleteFaq(faq._id)}
+                        disabled={deleteLoading === faq._id}
+                        className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                        title="Delete FAQ"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {deleteLoading === faq._id ? (
+                          <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </div>

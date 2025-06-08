@@ -1,15 +1,19 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import OpenAI from 'openai';
 import Conversation from '../models/Conversation.js';
 import FAQ from '../models/FAQ.js';
+
+// Load environment variables first
 dotenv.config();
 
 const router = express.Router();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+// OpenRouter API configuration
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+
+// Available free models on OpenRouter
+const DEFAULT_MODEL = 'mistralai/mistral-7b-instruct:free';
 
 // System prompt for customer support
 const SYSTEM_PROMPT = `You are a helpful and professional customer support assistant. 
@@ -26,6 +30,10 @@ router.post('/', async (req, res) => {
 
     if (!message || !userId || !sessionId) {
       return res.status(400).json({ error: 'Message, userId, and sessionId are required' });
+    }
+
+    if (!OPENROUTER_API_KEY) {
+      return res.status(500).json({ error: 'OpenRouter API key not configured' });
     }
 
     // Get or create conversation
@@ -49,7 +57,7 @@ router.post('/', async (req, res) => {
     // Check for FAQ matches first
     const faqMatch = await findRelevantFAQ(message);
     
-    // Prepare messages for OpenAI
+    // Prepare messages for OpenRouter
     const messages = [
       { role: 'system', content: SYSTEM_PROMPT },
       ...(faqMatch ? [{ role: 'system', content: `Relevant FAQ: Q: ${faqMatch.question} A: ${faqMatch.answer}` }] : []),
@@ -59,13 +67,35 @@ router.post('/', async (req, res) => {
       }))
     ];
 
-    // Get AI response
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages,
-      max_tokens: 500,
-      temperature: 0.7
+    // Make request to OpenRouter API
+    const openRouterResponse = await fetch(OPENROUTER_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:5173',
+        'X-Title': 'AI Customer Support Chat'
+      },
+      body: JSON.stringify({
+        model: DEFAULT_MODEL,
+        messages: messages,
+        max_tokens: 500,
+        temperature: 0.7,
+        stream: false
+      })
     });
+
+    if (!openRouterResponse.ok) {
+      const errorData = await openRouterResponse.json().catch(() => ({}));
+      console.error('OpenRouter API error:', errorData);
+      throw new Error(`OpenRouter API error: ${openRouterResponse.status} ${openRouterResponse.statusText}`);
+    }
+
+    const completion = await openRouterResponse.json();
+    
+    if (!completion.choices || !completion.choices[0] || !completion.choices[0].message) {
+      throw new Error('Invalid response format from OpenRouter API');
+    }
 
     const aiResponse = completion.choices[0].message.content;
 
@@ -86,7 +116,8 @@ router.post('/', async (req, res) => {
     res.json({
       response: aiResponse,
       conversationId: conversation._id,
-      timestamp: new Date()
+      timestamp: new Date(),
+      model: DEFAULT_MODEL
     });
 
   } catch (error) {
@@ -133,6 +164,49 @@ router.get('/conversation/:sessionId', async (req, res) => {
   } catch (error) {
     console.error('Conversation fetch error:', error);
     res.status(500).json({ error: 'Failed to fetch conversation' });
+  }
+});
+
+// Get available models endpoint
+router.get('/models', async (req, res) => {
+  try {
+    if (!OPENROUTER_API_KEY) {
+      return res.status(500).json({ error: 'OpenRouter API key not configured' });
+    }
+
+    const response = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch models: ${response.status}`);
+    }
+
+    const models = await response.json();
+    
+    // Filter for free models
+    const freeModels = models.data.filter(model => 
+      model.pricing && 
+      (model.pricing.prompt === 0 || model.pricing.prompt === '0') &&
+      (model.pricing.completion === 0 || model.pricing.completion === '0')
+    );
+
+    res.json({
+      currentModel: DEFAULT_MODEL,
+      availableModels: freeModels.map(model => ({
+        id: model.id,
+        name: model.name,
+        description: model.description,
+        context_length: model.context_length
+      }))
+    });
+
+  } catch (error) {
+    console.error('Models fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch available models' });
   }
 });
 

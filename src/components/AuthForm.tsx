@@ -149,7 +149,7 @@ const AuthForm = observer(() => {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-200">
+          {/* <div className="mt-6 pt-6 border-t border-gray-200">
             <button
               onClick={handleDemoLogin}
               disabled={authStore.isLoading}
@@ -160,7 +160,7 @@ const AuthForm = observer(() => {
             <p className="text-xs text-gray-500 text-center mt-2">
               Demo mode allows you to test the chat without creating an account
             </p>
-          </div>
+          </div> */}
         </div>
 
         <div className="text-center mt-6 text-sm text-gray-500">
