@@ -24,7 +24,7 @@ class ChatStore {
   isTyping: boolean = false;
   error: string | null = null;
   
-  private apiUrl = 'http://localhost:5000/api';
+  private apiUrl = 'https://ai-backend-0ki0.onrender.com/api';
 
   constructor() {
     makeAutoObservable(this);

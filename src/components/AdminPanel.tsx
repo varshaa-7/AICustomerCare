@@ -42,7 +42,7 @@ const AdminPanel = observer(() => {
     isActive: true
   });
 
-  const apiUrl = 'http://localhost:5000/api';
+  const apiUrl = 'https://ai-backend-0ki0.onrender.com/api';
 
   useEffect(() => {
     loadFAQs();
