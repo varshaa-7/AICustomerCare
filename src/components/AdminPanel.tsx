@@ -307,21 +307,27 @@ const AdminPanel = observer(() => {
               <p className="text-sm text-gray-500">Manage FAQs and Knowledge Base</p>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <span className="text-sm text-gray-600">Welcome, {authStore.user?.name}</span>
+          <div className="flex items-center space-x-4">
+          <span className="text-sm text-gray-600 whitespace-nowrap">
+            Welcome, {authStore.user?.name}
+          </span>
+
+          <div className="flex items-center space-x-2 bg-white rounded-full p-1 shadow border border-gray-200">
             <button
               onClick={() => window.location.href = '/'}
-              className="px-4 py-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+              className="px-4 py-1.5 text-sm font-medium rounded-full text-white bg-blue-500 hover:bg-blue-600 transition-colors focus:outline-none"
             >
-              Back to Chat
+              Chat
             </button>
             <button
               onClick={() => authStore.logout()}
-              className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              className="px-4 py-1.5 text-sm font-medium rounded-full text-gray-700 hover:text-gray-900 transition-colors"
             >
-              Logout
+              Admin
             </button>
           </div>
+        </div>
+
         </div>
       </div>
 
