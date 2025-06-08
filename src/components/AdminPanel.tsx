@@ -307,7 +307,7 @@ const AdminPanel = observer(() => {
               <p className="text-sm text-gray-500">Manage FAQs and Knowledge Base</p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-8">
           <span className="text-sm text-gray-600 whitespace-nowrap">
             Welcome, {authStore.user?.name}
           </span>
@@ -317,13 +317,13 @@ const AdminPanel = observer(() => {
               onClick={() => window.location.href = '/'}
               className="px-4 py-1.5 text-sm font-medium rounded-full text-white bg-blue-500 hover:bg-blue-600 transition-colors focus:outline-none"
             >
-              Chat
+              Back to Chat
             </button>
             <button
               onClick={() => authStore.logout()}
               className="px-4 py-1.5 text-sm font-medium rounded-full text-gray-700 hover:text-gray-900 transition-colors"
             >
-              Admin
+              Logout
             </button>
           </div>
         </div>
