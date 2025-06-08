@@ -83,25 +83,50 @@ class ChatStore {
     }
   }
 
+  // async loadChatHistory(userId: string) {
+  //   try {
+  //     const response = await axios.get(`${this.apiUrl}/chat/history/${userId}`);
+  //     this.conversations = response.data.map((conv: any) => ({
+  //       id: conv._id,
+  //       sessionId: conv.sessionId,
+  //       title: conv.title,
+  //       messages: conv.messages.map((msg: any) => ({
+  //         id: msg._id,
+  //         role: msg.role,
+  //         content: msg.content,
+  //         timestamp: new Date(msg.timestamp)
+  //       })),
+  //       updatedAt: new Date(conv.updatedAt)
+  //     }));
+  //   } catch (error) {
+  //     console.error('Error loading chat history:', error);
+  //   }
+  // }
   async loadChatHistory(userId: string) {
-    try {
-      const response = await axios.get(`${this.apiUrl}/chat/history/${userId}`);
-      this.conversations = response.data.map((conv: any) => ({
-        id: conv._id,
-        sessionId: conv.sessionId,
-        title: conv.title,
-        messages: conv.messages.map((msg: any) => ({
-          id: msg._id,
-          role: msg.role,
-          content: msg.content,
-          timestamp: new Date(msg.timestamp)
-        })),
-        updatedAt: new Date(conv.updatedAt)
-      }));
-    } catch (error) {
-      console.error('Error loading chat history:', error);
+  try {
+    const response = await axios.get(`${this.apiUrl}/chat/history/${userId}`);
+    const history = response.data;
+
+    this.conversations = history.map((conv: any) => ({
+      id: conv._id,
+      sessionId: conv.sessionId,
+      title: conv.title,
+      messages: [], // we don't load messages here, only metadata
+      updatedAt: new Date(conv.updatedAt)
+    }));
+
+    // If at least one conversation exists, load the latest one
+    if (history.length > 0) {
+      const latestSessionId = history[0].sessionId;
+      await this.loadConversation(latestSessionId, userId); // 👈 load only this one
+    } else {
+      this.startNewConversation(); // new session if no previous conv
     }
+  } catch (error) {
+    console.error('Error loading chat history:', error);
   }
+}
+
 
   async loadConversation(sessionId: string, userId: string) {
     try {
